@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- vão definir o tamanho/dimensao do tamanho da tela galeria -->
+    <dimen name="itemWidth">100dp</dimen>
+    <dimen name="itemHeigth">100dp</dimen>
+</resources>
