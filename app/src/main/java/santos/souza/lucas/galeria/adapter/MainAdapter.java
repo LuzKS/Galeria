@@ -35,9 +35,8 @@ public class MainAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public int getItemCount(){
+    public int getItemCount() {
         return photos.size(); //retorna tamanho da lista
-    }
     }
 
     @Override
@@ -54,7 +53,7 @@ public class MainAdapter extends RecyclerView.Adapter {
         imPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.startPhotoActivity(photos.get(position));
+                 mainActivity.startPhotoActivity(photos.get(position));
             }
         });
     }
