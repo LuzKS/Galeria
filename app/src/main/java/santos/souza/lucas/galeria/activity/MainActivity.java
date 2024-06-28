@@ -1,8 +1,13 @@
 package santos.souza.lucas.galeria.activity;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -16,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -52,6 +58,10 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        List<String> permissions = new ArrayList<>();
+        permissions.add(Manifest.permission.CAMERA);
+        checkForPermissions(permissions);
 
         //acessam diretório, le a lista de ftos salvas e adicionam na lista de fotos
         File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -138,8 +148,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkForPermissions(List<String> permissions){
+    private void checkForPermissions(List<String> permissions){ // pega lista depermissoes
+        List<String> permissionsNotGranted = new ArrayList<>();
 
+        for(String permission : permissions){
+            if(!hasPermission(permission)){ //se n permitir, cploca em lista de n permitidss
+                permissionsNotGranted.add(permission);
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(permissionsNotGranted.size() > 0){
+                requestPermissions(permissionsNotGranted.toArray(new String[permissionsNotGranted.size()]), RESULT_REQUEST_PERMISSION); //pede para user permitir
+            }
+        }
     }
 
+    private boolean hasPermission(String permission){ // verifica se permissao foi dada ou n
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            return ActivityCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_GRANTED;
+
+        }
+        return false;
+    }
+
+    @Override
+    //chamad dps de usuario permirir
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        final List<String> permissionsRejected = new ArrayList<>();
+        if(requestCode == RESULT_REQUEST_PERMISSION){// verifica se permissao foi dada
+            for(String permission : permissions){
+                if (!hasPermission(permission)){// se tiver alguma n permitida, ele adiciona na lista
+                    permissionsRejected.add(permission);
+                }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))){
+                new AlertDialog.Builder(MainActivity.this).setMessage("Para usar essa app é necessário conceder essas permissões").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {//requisita as permissoes de novo
+                        requestPermissions(permissionsRejected.toArray(new String[permissionsRejected.size()]), RESULT_REQUEST_PERMISSION);
+                    }
+                }).create().show();
+            }
+        }
+    }
 }
